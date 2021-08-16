@@ -7,7 +7,18 @@ const axios = require('axios');
 // lcd.clearSync();
 const EXIST_WHEN_READ_ERROR = process.env.EXIST_WHEN_READ_ERROR && process.env.EXIST_WHEN_READ_ERROR === 'false' ? false : true;
 
-const DEFAULT_QUERY = ['cid', 'name', 'dob', 'gender'];
+const DEFAULT_QUERY = [
+'cid',
+'name',
+'nameEn',
+'dob',
+'gender',
+'issuer',
+'issueDate',
+'expireDate',
+'address',
+'photo',
+'nhso'];
 
 const ALL_QUERY = [
   'cid',
@@ -20,7 +31,7 @@ const ALL_QUERY = [
   'expireDate',
   'address',
   'photo',
-  //'nhso',
+  'nhso',
 ];
 
 let query = [...DEFAULT_QUERY];
