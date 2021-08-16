@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Example-SMC</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    window.addEventListener('load', function () {
+      var status = document.getElementById("status");
+      // var log = document.getElementById("log");
+
+      function updateOnlineStatus(event) {
+        var condition = navigator.onLine ? "internet online" : "internet offline";
+
+        status.className = condition;
+        status.innerHTML = condition.toUpperCase();
+
+        // log.insertAdjacentHTML("beforeend", "Event: " + event.type + "; Status: " + condition);
+      }
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+
+    });
+    function isOnline() {
+      var status_p = document.getElementById("status_p");
+      if (navigator.onLine) {
+        status_p.innerHTML = "เชื่อมต่ออินเตอร์ สำเร็จ";
+      } else {
+        status_p.innerHTML = "เชื่อมต่ออินเตอร์ ผิดพลาด";
+      }
+    }
+  </script>
+  <style>
+    #status {
+      position: fixed;
+      width: 100%;
+      font: bold 1em sans-serif;
+      color: #FFF;
+      padding: 0.5em;
+    }
+
+    #log {
+      padding: 2.5em 0.5em 0.5em;
+      font: 1em sans-serif;
+    }
+
+    .online {
+      background: green;
+    }
+
+    .offline {
+      background: red;
+    }
+
+    mark {
+      background-color: #c0ffc8;
+    }
+  </style>
+</head>
+
+<body onload="isOnline()">
+  <h1>เครื่องอ่านบัตรประชาชน</h1>
+  <div id="status"></div>
+  <br>
+  <h2 id="status_p"></h2>
+  <br>
+  <h3 id="data_status"></h3>
+  <h4 id="cid"></h4>
+  <h4 id="fullname"></h4>
+  <h4 id="gender"></h4>
+  <h4 id="birthdate"></h4>
+  <h4 id="address"></h4>
+  <script>
+    // const axios = require('axios');
+    var socket = io.connect('http://localhost:8080');
+    const dataEl = document.getElementById('data_status');
+    socket.on('connect', function () {
+      socket.emit('set-query', {
+        query: [
+          'cid',
+          'name',
+          'nameEn',
+          'dob',
+          'gender',
+          'issuer',
+          'issueDate',
+          'expireDate',
+          'address',
+          'photo',
+          //'nhso',
+        ],
+      });
+    });
+    socket.on('smc-data', function (data) {
+      //console.log(JSON.parse(data.cid));
+      // const myObj = JSON.parse(data);
+      isOnline();
+      dataEl.innerHTML = 'อ่านข้อมูลสำเร็จ';// อ่านข้อมูลสำเร็จ
+      // console.log(data);
+      document.getElementById("cid").innerHTML = data.data.cid;
+      document.getElementById("fullname").innerHTML = data.data.name.fullname;
+      document.getElementById("gender").innerHTML = data.data.gender == 1 ? "ชาย" : "หญิง";
+      document.getElementById("birthdate").innerHTML = data.data.dob;
+      document.getElementById("address").innerHTML = data.data.address.full;
+
+
+    });
+    socket.on('smc-error', function (data) {
+      // console.log(data);
+      isOnline();
+      dataEl.innerHTML = 'ไม่เสียบเครื่องอ่านบัตรประชาชน'; //ไม่เสียบเครื่องอ่าน
+      document.getElementById("cid").innerHTML = '';
+      document.getElementById("fullname").innerHTML = '';
+      document.getElementById("gender").innerHTML = '';
+      document.getElementById("birthdate").innerHTML = '';
+      document.getElementById("address").innerHTML = '';
+    });
+    socket.on('smc-removed', function (data) {
+      // console.log(data);
+      isOnline();
+      dataEl.innerHTML = 'ไม่ได้เสียบบัตรประชาชน'; //ไม่ได้เสียบบัตร
+      document.getElementById("cid").innerHTML = '';
+      document.getElementById("fullname").innerHTML = '';
+      document.getElementById("gender").innerHTML = '';
+      document.getElementById("birthdate").innerHTML = '';
+      document.getElementById("address").innerHTML = '';
+    });
+    socket.on('smc-incorrect', function (data) {
+      // console.log(data);
+      isOnline();
+      dataEl.innerHTML = 'ไม่สามารถอ่านบัตรประชาชนได้';
+      document.getElementById("cid").innerHTML = '';
+      document.getElementById("fullname").innerHTML = '';
+      document.getElementById("gender").innerHTML = '';
+      document.getElementById("birthdate").innerHTML = '';
+      document.getElementById("address").innerHTML = '';
+    });
+    socket.on('smc-inserted', function (data) {
+      // console.log(data);
+      isOnline();
+      dataEl.innerHTML = 'กำลังอ่านข้อมูล....';// กำลังอ่านข้อมูล
+      document.getElementById("cid").innerHTML = '';
+      document.getElementById("fullname").innerHTML = '';
+      document.getElementById("gender").innerHTML = '';
+      document.getElementById("birthdate").innerHTML = '';
+      document.getElementById("address").innerHTML = '';
+    });
+
+  </script>
+</body>
+
+</html>
